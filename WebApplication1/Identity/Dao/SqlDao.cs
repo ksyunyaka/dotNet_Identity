@@ -16,6 +16,37 @@ namespace WebApplication1.Identity.Dao
             connection = con;
         }
 
+        public AppUser getUserByUserName(string userName)
+        {
+            string sql = "select* from identity_user where user_name=@username";
+            try
+            {
+                connection.Open();
+                var cmd = new MySqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@username", userName);
+                cmd.Prepare();
+                AppUser user = null; ;
+                using (var reader = cmd.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        user = new AppUser()
+                        {
+                            Id = reader.GetString("id"),
+                            UserName = reader.GetString("user_name"),
+                            Email = reader.GetString("email"),
+                            PasswordHash = reader.GetString("password_hash")
+
+                        };
+                        return user;
+                    }
+                return null;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
 
         public UserRole getRole(string roleName)
         {
@@ -47,17 +78,25 @@ namespace WebApplication1.Identity.Dao
 
         public async Task<int> CreateUser(AppUser user)
         {
-            string sql = "INSERT INTO identity_user " +
+            string sql = "INSERT INTO identity_user (user_name, normalized_user_name, email, normalized_email, password_hash) " +
                 "VALUES (@user_name, @normalized_user_name, @email, @normalized_email, @password_hash)";
-            var cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@name", user.UserName);
-            cmd.Parameters.AddWithValue("@normalized_user_name", user.UserName.ToUpper());
-            cmd.Parameters.AddWithValue("@email", user.Email);
-            cmd.Parameters.AddWithValue("@normalized_email", user.Email.ToUpper());
-            cmd.Parameters.AddWithValue("@password_hash", user.PasswordHash);
-            cmd.Prepare();
+            connection.Open();
+            try
+            {
+                var cmd = new MySqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@user_name", user.UserName);
+                cmd.Parameters.AddWithValue("@normalized_user_name", user.NormalizedUserName);
+                cmd.Parameters.AddWithValue("@email", user.Email);
+                cmd.Parameters.AddWithValue("@normalized_email", user.NormalizedEmail);
+                cmd.Parameters.AddWithValue("@password_hash", user.PasswordHash);
+                cmd.Prepare();
 
-            return await cmd.ExecuteNonQueryAsync();
+                return await cmd.ExecuteNonQueryAsync();
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
 
         public int CreateRole(UserRole userRole)

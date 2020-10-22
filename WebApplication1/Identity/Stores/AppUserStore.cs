@@ -70,47 +70,72 @@ namespace WebApplication1.Identity.Stores
 
         public Task<AppUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("fName");
+            Console.WriteLine(normalizedUserName + " search");
+            AppUser user = daoService.getUserByUserName(normalizedUserName);
+            return Task.FromResult(user);
         }
 
         public Task<string> GetEmailAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("gEmail");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.Email);
         }
 
         public Task<bool> GetEmailConfirmedAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("gEmConfir");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(true);
         }
 
         public Task<string> GetNormalizedEmailAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("gNoEmail");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.NormalizedEmail);
         }
 
         public Task<string> GetNormalizedUserNameAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("GNUN");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.NormalizedUserName);
         }
 
         public Task<string> GetPasswordHashAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("GPH");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.PasswordHash);
         }
 
         public Task<IList<string>> GetRolesAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("GRA");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            IList<string> userRoles = user.Roles.Select(r => r.Name).ToList();
+
+            return Task.FromResult(userRoles);
         }
 
         public Task<string> GetUserIdAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("GUIA");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.Id);
         }
 
         public Task<string> GetUserNameAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("GUN");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return Task.FromResult(user.UserName);
         }
 
         public Task<IList<AppUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
@@ -120,47 +145,96 @@ namespace WebApplication1.Identity.Stores
 
         public Task<bool> HasPasswordAsync(AppUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("HAsPAs");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            String pass = user.PasswordHash;
+            return Task.FromResult(pass != null);
         }
 
-        public Task<bool> IsInRoleAsync(AppUser user, string roleName, CancellationToken cancellationToken)
+        public Task<bool> IsInRoleAsync(AppUser user, string normalizedRoleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("IsInRole");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (normalizedRoleName == null)
+            {
+                throw new ArgumentNullException(nameof(normalizedRoleName));
+            }
+
+            bool isInRole = user.Roles.Any(r => r.NormalizedName.Equals(normalizedRoleName));
+
+            return Task.FromResult(isInRole);
         }
 
-        public Task RemoveFromRoleAsync(AppUser user, string roleName, CancellationToken cancellationToken)
+        public Task RemoveFromRoleAsync(AppUser user, string normalizedRoleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("RemoveRoleAsync");
+            cancellationToken.ThrowIfCancellationRequested();
+            
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (normalizedRoleName == null)
+            {
+                throw new ArgumentNullException(nameof(normalizedRoleName));
+            }
+
+            IdentityRole roleToRemove = user.Roles.FirstOrDefault(r => r.NormalizedName == normalizedRoleName);
+
+            if (roleToRemove != null)
+            {
+                user.Roles.Remove(roleToRemove);
+            }
+
+            return Task.CompletedTask;
         }
 
         public Task SetEmailAsync(AppUser user, string email, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("setEmail");
+            user.Email = email;
+            return Task.CompletedTask;
         }
 
         public Task SetEmailConfirmedAsync(AppUser user, bool confirmed, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("setEConfi");
+            Console.WriteLine("Email confirmed set");
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedEmailAsync(AppUser user, string normalizedEmail, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("setNorEmai");
+            user.NormalizedEmail = normalizedEmail;
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedUserNameAsync(AppUser user, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("SetNUseName");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            user.NormalizedUserName = normalizedName;
+            return Task.CompletedTask;
         }
 
         public Task SetPasswordHashAsync(AppUser user, string passwordHash, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("SetPHas");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            user.PasswordHash = passwordHash;
+            return Task.CompletedTask;
         }
 
         public Task SetUserNameAsync(AppUser user, string userName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("SetUseN");
+            cancellationToken.ThrowIfCancellationRequested();
+
+            user.UserName = userName;
+            return Task.CompletedTask;
         }
 
         public Task<IdentityResult> UpdateAsync(AppUser user, CancellationToken cancellationToken)
