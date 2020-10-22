@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WebApplication1.Identity.Entity;
+using WebApplication1.Identity.Stores;
+using MySql.Data.MySqlClient;
+using WebApplication1.Identity.Dao;
 
 namespace WebApplication1
 {
@@ -27,11 +26,19 @@ namespace WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddAuthentication();
+            services.AddIdentity<AppUser, UserRole>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders();
+            services.AddTransient<IUserStore<AppUser>, AppUserStore>();
+            services.AddTransient<IRoleStore<UserRole>, UserRoleStore<UserRole>>();
+            string connectionString = Configuration.GetConnectionString("MySQLConnection");
+            services.AddTransient<MySqlConnection>(e => new MySqlConnection(connectionString));
+            services.AddTransient<SqlDao>();
+            
+
+            //services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true);
+            
             services.AddRazorPages();
         }
 
@@ -41,7 +48,6 @@ namespace WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {

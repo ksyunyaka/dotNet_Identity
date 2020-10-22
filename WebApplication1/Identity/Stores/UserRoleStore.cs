@@ -14,72 +14,72 @@ namespace WebApplication1.Identity.Stores
     {
         public Task AddClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Role.AddClaims");
         }
 
         public Task<IdentityResult> CreateAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Create.Role");
         }
 
         public Task<IdentityResult> DeleteAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("De;et.Role");
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Role dispose invoked");
         }
 
         public Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("FindById.Role");
         }
 
         public Task<TRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("FByNamne.Role");
         }
 
         public Task<IList<Claim>> GetClaimsAsync(TRole role, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("GetClaims.Role");
         }
 
         public Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("GNR.Role");
         }
 
         public Task<string> GetRoleIdAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("GRI.Role");
         }
 
         public Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("GRN.Role");
         }
 
         public Task RemoveClaimAsync(TRole role, Claim claim, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("RemoClaim.Role");
         }
 
         public Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("SetNN.Role");
         }
 
         public Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("SetRN.Role");
         }
 
         public Task<IdentityResult> UpdateAsync(TRole role, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Update.Role");
         }
     }
 }
