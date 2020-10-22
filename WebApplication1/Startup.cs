@@ -27,11 +27,11 @@ namespace WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication();
-            services.AddIdentity<AppUser, UserRole>()
+            services.AddIdentity<AppUser, IdentityRole>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
             services.AddTransient<IUserStore<AppUser>, AppUserStore>();
-            services.AddTransient<IRoleStore<UserRole>, UserRoleStore<UserRole>>();
+            services.AddTransient<IRoleStore<IdentityRole>, AppRoleStore>();
             string connectionString = Configuration.GetConnectionString("MySQLConnection");
             services.AddTransient<MySqlConnection>(e => new MySqlConnection(connectionString));
             services.AddTransient<SqlDao>();

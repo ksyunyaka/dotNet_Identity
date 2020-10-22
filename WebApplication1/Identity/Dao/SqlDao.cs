@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.AspNetCore.Identity;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,31 +48,60 @@ namespace WebApplication1.Identity.Dao
             }
         }
 
-
-        public UserRole getRole(string roleName)
+        public IList<IdentityRole> getRolesForUser(int userId)
         {
-            string sql = "select * from identity_role where name = @name";
+            string sql = "SELECT r.id, r.name FROM identity_role r JOIN identity_user_roles ur ON(r.id = ur.role_id AND ur.user_id = @userId)";
             try
             {
                 connection.Open();
                 var cmd = new MySqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@name", roleName);
+                cmd.Parameters.AddWithValue("@userId", userId);
                 cmd.Prepare();
-                UserRole role = null; ;
+                IList<IdentityRole> userRoles = new List<IdentityRole>();
                 using (var reader = cmd.ExecuteReader())
                     while (reader.Read())
                     {
-                        role = new UserRole()
+                        IdentityRole role = new IdentityRole()
                         {
                             Id = reader.GetString(0),
                             Name = reader.GetString(1)
+                        };
+                        userRoles.Add(role);
+                    }
+                return userRoles;   
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+        public async Task<IdentityRole> getRole(string roleName)
+        {
+            string sql = "select * from identity_role where name = @name";
+            try
+            {
+                await connection.OpenAsync();
+                var cmd = new MySqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@name", roleName);
+                cmd.Prepare();
+                IdentityRole role = null; ;
+                using (var reader = await cmd.ExecuteReaderAsync())
+                    while (reader.Read())
+                    {
+                        role = new IdentityRole()
+                        {
+                            Id = reader.GetString(0),
+                            Name = reader.GetString(1),
+                            NormalizedName = reader.GetString(1).ToUpper()
                         };
                     }
                 return role;
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
             
         }
@@ -99,7 +129,7 @@ namespace WebApplication1.Identity.Dao
             }
         }
 
-        public int CreateRole(UserRole userRole)
+        public int CreateRole(IdentityRole userRole)
         {
             string sql = "INSERT INTO identity_role " +
                 "VALUES (@name, @normalized_name)";
@@ -111,7 +141,7 @@ namespace WebApplication1.Identity.Dao
             return cmd.ExecuteNonQuery();
         }
 
-        public int AddRoleToUser(AppUser user, UserRole userRole)
+        public int AddRoleToUser(AppUser user, IdentityRole userRole)
         {
             string sql = "INSERT INTO identity_user_roles " +
                 "VALUES (@user_id, @role_id)";

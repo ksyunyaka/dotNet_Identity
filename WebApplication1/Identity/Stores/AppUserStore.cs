@@ -21,16 +21,16 @@ namespace WebApplication1.Identity.Stores
             daoService = service;
         }
 
-        public Task AddToRoleAsync(AppUser user, string roleName, CancellationToken cancellationToken)
+        public async Task AddToRoleAsync(AppUser user, string roleName, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            UserRole role = daoService.getRole(roleName);
+            IdentityRole role = await daoService.getRole(roleName);
             if(role == null) throw new ArgumentException(nameof(roleName), $"The role with the given name {roleName} does not exist");
 
             user.Roles.Add(role);
-            return Task.CompletedTask;
+            
         }
 
         public async Task<IdentityResult> CreateAsync(AppUser user, CancellationToken cancellationToken)
@@ -72,6 +72,8 @@ namespace WebApplication1.Identity.Stores
         {
             Console.WriteLine(normalizedUserName + " search");
             AppUser user = daoService.getUserByUserName(normalizedUserName);
+            IList<IdentityRole> roles = daoService.getRolesForUser(int.Parse(user.Id));
+            user.Roles = roles;
             return Task.FromResult(user);
         }
 

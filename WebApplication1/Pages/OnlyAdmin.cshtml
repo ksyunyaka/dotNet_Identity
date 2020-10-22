@@ -1,0 +1,19 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<WebApplication1.Identity.Entity.AppUser> SignInManager
+@inject UserManager<WebApplication1.Identity.Entity.AppUser> UserManager
+@model OnlyAdminModel
+@{
+    ViewData["Title"] = "Only Admin";
+}
+<h1>@ViewData["Title"]</h1>
+
+    @if (SignInManager.IsSignedIn(User) && User.IsInRole("ADMIN"))
+    {
+<p>Welcom admin:  @User.Identity.Name</p>
+    }
+    else
+    {
+        <p>Ne admin</p>
+    }
+
