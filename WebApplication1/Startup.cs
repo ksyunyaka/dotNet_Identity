@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +14,8 @@ using WebApplication1.Identity.Entity;
 using WebApplication1.Identity.Stores;
 using MySql.Data.MySqlClient;
 using WebApplication1.Identity.Dao;
+using WebApplication1.Areas.Identity;
+using WebApplication1.Data;
 
 namespace WebApplication1
 {
@@ -27,6 +32,9 @@ namespace WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication();
+            services.AddAuthorization();
+
+            // identity config
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
@@ -35,11 +43,12 @@ namespace WebApplication1
             string connectionString = Configuration.GetConnectionString("MySQLConnection");
             services.AddTransient<MySqlConnection>(e => new MySqlConnection(connectionString));
             services.AddTransient<SqlDao>();
-            
 
-            //services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true);
-            
+            //blazor config
             services.AddRazorPages();
+            services.AddServerSideBlazor();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppUser>>();
+            services.AddSingleton<WeatherForecastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +75,9 @@ namespace WebApplication1
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapControllers();
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }

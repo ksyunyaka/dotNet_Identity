@@ -63,18 +63,20 @@ namespace WebApplication1.Identity.Stores
             throw new NotImplementedException("fBEmail");
         }
 
-        public Task<AppUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<AppUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("FindId");
+            AppUser user = await daoService.getUserById(userId);
+            IList<IdentityRole> roles = await daoService.getRolesForUser(int.Parse(user.Id));
+            user.Roles = roles;
+            return user;
         }
 
-        public Task<AppUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<AppUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            Console.WriteLine(normalizedUserName + " search");
             AppUser user = daoService.getUserByUserName(normalizedUserName);
-            IList<IdentityRole> roles = daoService.getRolesForUser(int.Parse(user.Id));
+            IList<IdentityRole> roles = await daoService.getRolesForUser(int.Parse(user.Id));
             user.Roles = roles;
-            return Task.FromResult(user);
+            return user;
         }
 
         public Task<string> GetEmailAsync(AppUser user, CancellationToken cancellationToken)

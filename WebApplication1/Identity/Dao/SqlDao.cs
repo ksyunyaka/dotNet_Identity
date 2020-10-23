@@ -2,6 +2,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApplication1.Identity.Entity;
@@ -48,17 +49,47 @@ namespace WebApplication1.Identity.Dao
             }
         }
 
-        public IList<IdentityRole> getRolesForUser(int userId)
+        public async Task<AppUser> getUserById(string userId)
+        {
+            string sql = "select* from identity_user where id=@userid";
+            try
+            {
+                await connection.OpenAsync();
+                var cmd = new MySqlCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@userid", int.Parse(userId));
+                cmd.Prepare();
+                AppUser user = null; ;
+                using (var reader = await cmd.ExecuteReaderAsync())
+                    while (reader.Read())
+                    {
+                        user = new AppUser()
+                        {
+                            Id = reader.GetString("id"),
+                            UserName = reader.GetString("user_name"),
+                            Email = reader.GetString("email"),
+                            PasswordHash = reader.GetString("password_hash")
+                        };
+                        return user;
+                    }
+                return null;
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        public async Task<IList<IdentityRole>> getRolesForUser(int userId)
         {
             string sql = "SELECT r.id, r.name FROM identity_role r JOIN identity_user_roles ur ON(r.id = ur.role_id AND ur.user_id = @userId)";
             try
             {
-                connection.Open();
+                await connection.OpenAsync();
                 var cmd = new MySqlCommand(sql, connection);
                 cmd.Parameters.AddWithValue("@userId", userId);
                 cmd.Prepare();
                 IList<IdentityRole> userRoles = new List<IdentityRole>();
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync())
                     while (reader.Read())
                     {
                         IdentityRole role = new IdentityRole()
@@ -72,7 +103,7 @@ namespace WebApplication1.Identity.Dao
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
         }
 
