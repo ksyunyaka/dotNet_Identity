@@ -1,23 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WebApplication1.Identity.Entity;
-using WebApplication1.Identity.Stores;
 using MySql.Data.MySqlClient;
-using WebApplication1.Identity.Dao;
-using WebApplication1.Areas.Identity;
-using WebApplication1.Data;
+using VM.Areas.Identity;
+using VM.Core.Entities;
+using VM.Data.Identity;
+using VM.Core.Interfaces;
+using VM.Data.Repository;
+using VM.Web.Data;
 
-namespace WebApplication1
+namespace VM.Web
 {
     public class Startup
     {
@@ -35,20 +31,23 @@ namespace WebApplication1
             services.AddAuthorization();
 
             // identity config
-            services.AddIdentity<AppUser, IdentityRole>()
+            services.AddIdentity<VmUser, VmUserRole>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
-            services.AddTransient<IUserStore<AppUser>, AppUserStore>();
-            services.AddTransient<IRoleStore<IdentityRole>, AppRoleStore>();
-            string connectionString = Configuration.GetConnectionString("MySQLConnection");
-            services.AddTransient<MySqlConnection>(e => new MySqlConnection(connectionString));
-            services.AddTransient<SqlDao>();
-
+            services.AddScoped<IUserStore<VmUser>, IdentityUserStore>();
+            services.AddScoped<IRoleStore<VmUserRole>, IdentityRoleStore>();
+                       
             //blazor config
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppUser>>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<VmUser>>();
+            
+            //app services config
+            string connectionString = Configuration.GetConnectionString("MySQLConnection");
+            services.AddSingleton<MySqlConnection>(e => new MySqlConnection(connectionString));
+            services.AddSingleton<IVmUserRepository, CosmosVmUserRepository>();
             services.AddSingleton<WeatherForecastService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

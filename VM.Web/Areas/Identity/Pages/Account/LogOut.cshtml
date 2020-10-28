@@ -1,7 +1,7 @@
 ﻿@page
 @using Microsoft.AspNetCore.Identity
 @attribute [IgnoreAntiforgeryToken]
-@inject SignInManager<WebApplication1.Identity.Entity.AppUser> SignInManager
+@inject SignInManager<VM.Core.Entities.VmUser> SignInManager
 @functions {
     public async Task<IActionResult> OnPost()
     {

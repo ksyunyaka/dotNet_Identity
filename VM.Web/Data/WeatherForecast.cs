@@ -1,6 +1,6 @@
 using System;
 
-namespace WebApplication1.Data
+namespace VM.Web.Data
 {
     public class WeatherForecast
     {
