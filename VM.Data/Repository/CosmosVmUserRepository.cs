@@ -1,8 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using VM.Core.Entities;
 using VM.Core.Interfaces;
 
@@ -10,15 +16,17 @@ namespace VM.Data.Repository
 {
     public class CosmosVmUserRepository : IVmUserRepository
     {
-        private readonly MySqlConnection connection;
+        private readonly CosmosClient cosmos;
+        private readonly Container container;
         private readonly ILogger<CosmosVmUserRepository> logger;
 
         private readonly IList<string> availableRoles = new List<String>() { "VM_CREW", "VM_ADMIN", "CUSTOMER" };
 
-        public CosmosVmUserRepository(MySqlConnection con, ILogger<CosmosVmUserRepository> log)
+        public CosmosVmUserRepository(CosmosClient con, ILogger<CosmosVmUserRepository> log)
         {
-            connection = con;
+            cosmos = con;
             logger = log;
+            container = cosmos.GetContainer("VMSite", "users");
         }
 
         public VmUserRole GetRole(string roleName)
@@ -37,69 +45,52 @@ namespace VM.Data.Repository
             }
         }
 
-        public VmUser GetUserByUserName(string userName)
+        public async Task<VmUser> GetUserByUserName(string userName)
         {
-            string sql = "select* from identity_user where user_name=@username";
+            QueryDefinition query = new QueryDefinition("select * from users u where u.NormalizedUserName=@userName").WithParameter("@userName", userName);
             try
             {
-                connection.Open();
-                var cmd = new MySqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@username", userName);
-                cmd.Prepare();
-                VmUser user = null; ;
-                using (var reader = cmd.ExecuteReader())
-                    while (reader.Read())
+                FeedIterator<VmUser> feedIterator = container.GetItemQueryIterator<VmUser>(query);
+                if (feedIterator.HasMoreResults)
+                {
+                    FeedResponse<VmUser> currentResultSet = await feedIterator.ReadNextAsync();
+                    int userCount = currentResultSet.Count();
+                    if (userCount == 1)
                     {
-                        user = new VmUser()
+                        foreach (VmUser user in currentResultSet)
                         {
-                            //   Id = reader.GetString("id"),
-                            UserName = reader.GetString("user_name"),
-                            Email = reader.GetString("email"),
-                            PasswordHash = reader.GetString("password_hash")
+                            return user;
 
-                        };
-                        return user;
+                        }
                     }
-                return null;
+                    else
+                    {
+                        logger.LogWarning("Found more than one person by username: " + userName);
+                    }
+
+                }
             }
             catch (Exception e)
             {
                 logger.LogError("Failed to get user by username: " + userName, e);
-                return null;
+          
             }
-            finally
-            {
-                connection.Close();
-            }
+            return null;
         }
 
-        public VmUser CreateUser(VmUser user)
+        public async Task<VmUser> CreateUserAsync(VmUser user)
         {
-            string sql = "INSERT INTO identity_user (user_name, normalized_user_name, email, normalized_email, password_hash) " +
-                   "VALUES (@user_name, @normalized_user_name, @email, @normalized_email, @password_hash)";
-            connection.Open();
             try
             {
-                var cmd = new MySqlCommand(sql, connection);
-                cmd.Parameters.AddWithValue("@user_name", user.UserName);
-                cmd.Parameters.AddWithValue("@normalized_user_name", user.NormalizedUserName);
-                cmd.Parameters.AddWithValue("@email", user.Email);
-                cmd.Parameters.AddWithValue("@normalized_email", user.NormalizedEmail);
-                cmd.Parameters.AddWithValue("@password_hash", user.PasswordHash);
-                cmd.Prepare();
-
-                cmd.ExecuteNonQuery();
-                return user;
+                ItemResponse<VmUser> itemResponse = await container.CreateItemAsync<VmUser>(user, new PartitionKey(user.UserName));
+                return itemResponse.Resource;
             }
             catch (Exception e)
             {
                 logger.LogError("Failed to create user: " + user, e);
                 return null;
             }
-            finally
-            {
-                connection.Close();
-            }
+            
         }
     }
 }

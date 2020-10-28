@@ -12,6 +12,7 @@ using VM.Data.Identity;
 using VM.Core.Interfaces;
 using VM.Data.Repository;
 using VM.Web.Data;
+using Microsoft.Azure.Cosmos;
 
 namespace VM.Web
 {
@@ -41,13 +42,19 @@ namespace VM.Web
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<VmUser>>();
-            
+
             //app services config
-            string connectionString = Configuration.GetConnectionString("MySQLConnection");
-            services.AddSingleton<MySqlConnection>(e => new MySqlConnection(connectionString));
+            CosmosClient cosmosClient = CreateCosmosClient();
+            services.AddSingleton<CosmosClient>(e => cosmosClient);
             services.AddSingleton<IVmUserRepository, CosmosVmUserRepository>();
             services.AddSingleton<WeatherForecastService>();
 
+        }
+
+        private CosmosClient CreateCosmosClient()
+        {
+            string connectionString = Configuration.GetConnectionString("CosmosConnection");
+            return new CosmosClient(connectionString);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

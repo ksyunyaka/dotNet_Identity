@@ -17,12 +17,10 @@ namespace VM.Data.Identity
                          IUserPasswordStore<VmUser>
     {
         private readonly IVmUserRepository userRepository;
-        private readonly ILogger<IdentityUserStore> logger;
 
-        public IdentityUserStore(IVmUserRepository service, ILogger<IdentityUserStore> log)
+        public IdentityUserStore(IVmUserRepository service)
         {
             userRepository = service;
-            logger = log;
         }
 
         public Task AddToRoleAsync(VmUser user, string roleName, CancellationToken cancellationToken)
@@ -37,19 +35,19 @@ namespace VM.Data.Identity
             return Task.CompletedTask;
         }
 
-        public Task<IdentityResult> CreateAsync(VmUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(VmUser user, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            VmUser vmUser = userRepository.CreateUser(user);
+            VmUser vmUser = await userRepository.CreateUserAsync(user);
             if (vmUser != null)
             {
-                return Task.FromResult(IdentityResult.Success);
+                return IdentityResult.Success;
             }
             else
             {
-                return Task.FromResult(IdentityResult.Failed(new IdentityError() { Description = "failed to create user" }));
+                return IdentityResult.Failed(new IdentityError() { Description = "failed to create user" });
             }
         }
 
@@ -68,15 +66,15 @@ namespace VM.Data.Identity
             throw new NotImplementedException("fBEmail");
         }
 
-        public Task<VmUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<VmUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(userRepository.GetUserByUserName(userId));
+            return await userRepository.GetUserByUserName(userId);
         }
 
-        public Task<VmUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<VmUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            VmUser user = userRepository.GetUserByUserName(normalizedUserName);
-            return Task.FromResult(user);
+            VmUser user = await userRepository.GetUserByUserName(normalizedUserName);
+            return user;
         }
 
         public Task<string> GetEmailAsync(VmUser user, CancellationToken cancellationToken)
