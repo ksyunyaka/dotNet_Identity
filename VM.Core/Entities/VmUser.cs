@@ -26,7 +26,7 @@ namespace VM.Core.Entities
 
         public string Organization { get; set; }
 
-        public string FirsName { get; set; }
+        public string FirstName { get; set; }
         public string LastName { get; set; }
 
         public bool IsDeleted { get; set; }

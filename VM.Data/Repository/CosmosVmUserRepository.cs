@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -29,6 +28,7 @@ namespace VM.Data.Repository
             container = cosmos.GetContainer("VMSite", "users");
         }
 
+        
         public VmUserRole GetRole(string roleName)
         {
             if (availableRoles.Contains(roleName))
@@ -72,7 +72,7 @@ namespace VM.Data.Repository
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to get user by username: " + userName, e);
+                logger.LogError(e, "Failed to get user by username: " + userName);
           
             }
             return null;
