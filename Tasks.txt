@@ -1,0 +1,5 @@
+1.Move Login/register from API to identity
+2.add Web assebly
+3.Roles as constant
+4.Right logging
+5.Add software clients
