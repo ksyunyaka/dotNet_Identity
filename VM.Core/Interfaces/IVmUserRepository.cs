@@ -10,6 +10,8 @@ namespace VM.Core.Interfaces
     {
         public Task<VmUser> GetUserByUserName(string userName);
 
+        public Task<VmUser> GetUserByUserId(string userId);
+
         public Task<VmUser> CreateUserAsync(VmUser user);
 
         public VmUserRole GetRole(string roleName);

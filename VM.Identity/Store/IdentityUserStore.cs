@@ -68,7 +68,7 @@ namespace VM.Identity.Store
 
         public async Task<VmUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            return await userRepository.GetUserByUserName(userId);
+            return await userRepository.GetUserByUserId(userId);
         }
 
         public async Task<VmUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)

@@ -47,7 +47,7 @@ namespace VM.Data.Repository
 
         public async Task<VmUser> GetUserByUserName(string userName)
         {
-            QueryDefinition query = new QueryDefinition("select * from users u where u.NormalizedUserName=@userName").WithParameter("@userName", userName);
+            QueryDefinition query = new QueryDefinition("select * from users u where u.NormalizedUserName=@userName").WithParameter("@userName", userName.ToUpper());
             try
             {
                 FeedIterator<VmUser> feedIterator = container.GetItemQueryIterator<VmUser>(query);
@@ -63,7 +63,7 @@ namespace VM.Data.Repository
 
                         }
                     }
-                    else
+                    else if(userCount > 1)
                     {
                         logger.LogWarning("Found more than one person by username: " + userName);
                     }
@@ -73,6 +73,39 @@ namespace VM.Data.Repository
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to get user by username: " + userName);
+          
+            }
+            return null;
+        }
+
+         public async Task<VmUser> GetUserByUserId(string userId)
+        {
+            QueryDefinition query = new QueryDefinition("select * from users u where u.id=@id").WithParameter("@id", userId);
+            try
+            {
+                FeedIterator<VmUser> feedIterator = container.GetItemQueryIterator<VmUser>(query);
+                if (feedIterator.HasMoreResults)
+                {
+                    FeedResponse<VmUser> currentResultSet = await feedIterator.ReadNextAsync();
+                    int userCount = currentResultSet.Count();
+                    if (userCount == 1)
+                    {
+                        foreach (VmUser user in currentResultSet)
+                        {
+                            return user;
+
+                        }
+                    }
+                    else if(userCount > 1)
+                    {
+                        logger.LogWarning("Found more than one person by If: " + userId);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Failed to get user by id: " + userId);
           
             }
             return null;
