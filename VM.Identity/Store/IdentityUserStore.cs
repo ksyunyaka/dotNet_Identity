@@ -130,7 +130,7 @@ namespace VM.Identity.Store
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult(user.UserName);
+            return Task.FromResult(user.Id);
         }
 
         public Task<string> GetUserNameAsync(VmUser user, CancellationToken cancellationToken)

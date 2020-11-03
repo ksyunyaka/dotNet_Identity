@@ -3,3 +3,4 @@
 3.Roles as constant
 4.Right logging
 5.Add software clients
+6.add user cache
